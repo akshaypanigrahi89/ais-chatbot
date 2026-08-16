@@ -1,15 +1,24 @@
-from openai import OpenAI
-from typing import List
+from typing import List, Optional
 from backend.config.settings import settings
 
 
 class EmbeddingService:
     def __init__(self):
-        self.client = OpenAI(
-            api_key=settings.EURON_API_KEY,
-            base_url=settings.EURON_BASE_URL
-        )
-        self.model = "text-embedding-3-small"
+        self._client = None
+
+    @property
+    def client(self):
+        if self._client is None:
+            from openai import OpenAI
+            self._client = OpenAI(
+                api_key=settings.EURON_API_KEY,
+                base_url=settings.EURON_BASE_URL
+            )
+        return self._client
+
+    @property
+    def model(self) -> str:
+        return "text-embedding-3-small"
 
     def embed_text(self, text: str) -> List[float]:
         response = self.client.embeddings.create(

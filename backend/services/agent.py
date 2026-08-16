@@ -4,12 +4,7 @@ from langgraph.graph.message import add_messages
 from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode
 from langchain_core.tools import tool
-from langchain_core.documents import Document
 
-from backend.services.retrieval_service import retrieval_service
-from backend.services.llm_service import llm_service
-from backend.guardrails.input_guardrails import input_guardrails
-from backend.guardrails.output_guardrails import output_guardrails
 from backend.config.settings import settings
 
 
@@ -44,6 +39,7 @@ When answering:
 @tool
 def retrieve_information(query: str) -> str:
     """Retrieve information from the knowledge base based on the query."""
+    from backend.services.retrieval_service import retrieval_service
     chunks = retrieval_service.retrieve(
         query=query,
         departments=["General"],
@@ -61,8 +57,11 @@ def off_topic() -> str:
 
 tools = [retrieve_information, off_topic]
 
+_agent_graph = None
+
 
 def create_agent():
+    from backend.services.llm_service import llm_service
     llm = llm_service.get_llm()
     llm_with_tools = llm.bind_tools(tools)
 
@@ -90,7 +89,11 @@ def create_agent():
     return workflow.compile()
 
 
-agent_graph = create_agent()
+def get_agent_graph():
+    global _agent_graph
+    if _agent_graph is None:
+        _agent_graph = create_agent()
+    return _agent_graph
 
 
 async def run_agent(
@@ -99,6 +102,9 @@ async def run_agent(
     department: str = "General",
     conversation_history: list = None
 ) -> dict:
+    from backend.guardrails.input_guardrails import input_guardrails
+    from backend.guardrails.output_guardrails import output_guardrails
+
     input_check, guardrail_result = input_guardrails.check(query)
 
     if not input_check:
@@ -126,7 +132,8 @@ async def run_agent(
         "user_id": user_id
     }
 
-    result = agent_graph.invoke(initial_state)
+    graph = get_agent_graph()
+    result = graph.invoke(initial_state)
 
     final_message = result["messages"][-1]
     response_text = final_message.content if hasattr(final_message, "content") else str(final_message)

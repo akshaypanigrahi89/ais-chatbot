@@ -5,14 +5,26 @@ from backend.config.settings import settings
 
 class ChromaStore:
     def __init__(self):
-        self.client = chromadb.HttpClient(
-            host=settings.CHROMADB_HOST,
-            port=settings.CHROMADB_PORT
-        )
-        self.collection = self.client.get_or_create_collection(
-            name=settings.CHROMADB_COLLECTION,
-            metadata={"hnsw:space": "cosine"}
-        )
+        self._client = None
+        self._collection = None
+
+    @property
+    def client(self):
+        if self._client is None:
+            self._client = chromadb.HttpClient(
+                host=settings.CHROMADB_HOST,
+                port=settings.CHROMADB_PORT
+            )
+        return self._client
+
+    @property
+    def collection(self):
+        if self._collection is None:
+            self._collection = self.client.get_or_create_collection(
+                name=settings.CHROMADB_COLLECTION,
+                metadata={"hnsw:space": "cosine"}
+            )
+        return self._collection
 
     def add_chunks(
         self,
@@ -67,8 +79,11 @@ class ChromaStore:
         )
 
     def get_stats(self) -> Dict[str, Any]:
-        count = self.collection.count()
-        return {"total_chunks": count}
+        try:
+            count = self.collection.count()
+            return {"total_chunks": count}
+        except Exception:
+            return {"total_chunks": 0}
 
 
 chroma_store = ChromaStore()
