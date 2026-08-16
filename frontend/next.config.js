@@ -4,7 +4,7 @@ const nextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "https://sia-chatbot-backend.onrender.com/api/:path*",
+        destination: "https://sia-chatbot-backend-production.up.railway.app/api/:path*",
       },
     ];
   },
