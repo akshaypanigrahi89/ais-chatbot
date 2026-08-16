@@ -1,13 +1,8 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: 'http://localhost:8000/api/:path*',
-      },
-    ];
-  },
-};
-
-module.exports = nextConfig;
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://sia-chatbot-backend.onrender.com/api/:path*"
+    }
+  ]
+}
