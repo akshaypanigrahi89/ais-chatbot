@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: sia-chatbot-backend
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:///./sia_chatbot.db
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: EURON_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: '["https://frontend-xi-eight-42.vercel.app"]'
+      - key: CHROMADB_HOST
+        value: chromadb
+      - key: REDIS_URL
+        value: redis://redis:6379/0

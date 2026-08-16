@@ -26,7 +26,13 @@ export function RegisterForm() {
         body: JSON.stringify(formData)
       })
 
-      const data = await response.json()
+      const text = await response.text()
+      let data
+      try {
+        data = JSON.parse(text)
+      } catch {
+        throw new Error("Backend is not available. Please try again later.")
+      }
 
       if (!response.ok) {
         throw new Error(data.detail || "Registration failed")
