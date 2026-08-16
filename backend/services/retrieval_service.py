@@ -1,7 +1,4 @@
 from typing import List, Dict, Any, Optional
-from backend.vectorstore.chroma_store import chroma_store
-from backend.services.embedding_service import embedding_service
-from backend.cache.cag_cache import cag_cache
 
 
 class RetrievalService:
@@ -16,6 +13,10 @@ class RetrievalService:
         top_k: int = 10,
         use_cache: bool = True
     ) -> List[Dict[str, Any]]:
+        from backend.vectorstore.chroma_store import chroma_store
+        from backend.services.embedding_service import embedding_service
+        from backend.cache.cag_cache import cag_cache
+
         cache_key = f"{query}|{','.join(sorted(departments))}"
 
         if use_cache:
